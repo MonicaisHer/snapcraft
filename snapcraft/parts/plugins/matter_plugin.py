@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """The matter plugin."""
+import os
+
 from typing import Any, Dict, List, Literal, Set, cast
 
 from craft_parts import infos, plugins
@@ -27,9 +29,10 @@ MATTER_REPO = "https://github.com/project-chip/connectedhomeip.git"
 class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
     """The part properties used by the matter plugin."""
 
+    # part properties required by the plugin
+    matter_branch: str
+    zap_version: str
     source: str
-    matter_channel: Literal["v1.2.0.1", "v1.1.0.2", "master"] = "master"
-    # matter_target: str = " "
 
     @classmethod
     @overrides
@@ -43,11 +46,38 @@ class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
         :raise pydantic.ValidationError: If validation fails.
         """
         plugin_data = plugins.extract_plugin_properties(
-            data,
-            plugin_name="matter",
-            required=["source"],
+            data, 
+            plugin_name="matter", 
+            required=["source","matter_branch","zap_version"]
         )
         return cls(**plugin_data)
+
+
+class MatterPluginDependencyZap:
+
+    def __init__(self, zap_version: str):
+        self.zap_version = zap_version
+        self.snap_arch = os.getenv("SNAP_ARCH")
+
+    def build_environment(self) -> Dict[str, str]:
+        environment = {}
+
+        if self.snap_arch == "arm64":
+            environment["ZAP_VERSION"] = self.zap_version
+
+        return environment
+
+    def build_packages(self) -> List[str]:
+        return ["wget", "unzip"]
+
+    def get_build_commands(self) -> str:
+        if self.snap_arch == "arm64":
+            return (
+                f"wget --no-verbose https://github.com/project-chip/zap/releases/download/{self.zap_version}/zap-linux-{self.snap_arch}.zip\n"
+                f"unzip -o zap-linux-{self.snap_arch}.zip\n"
+                f"echo 'export ZAP_INSTALL_PATH=$PWD'"
+            )
+        return ""
 
 
 class MatterPlugin(plugins.Plugin):
@@ -58,18 +88,24 @@ class MatterPlugin(plugins.Plugin):
     'sources' topic for the latter.
 
     Additionally, this plugin uses the following plugin-specific keywords:
-        - matter_channel: Literal["v1.2.0.1", "v1.1.0.2", "master"] = "master"
-        - matter_target:
+        - matter_branch
+          (str: default: None)
+          which branch of Matter to downlad (e.g. "v1.2.0.1")
     """
 
     properties_class = MatterPluginProperties
 
     def __init__(
-        self, *, properties: plugins.PluginProperties, part_info: infos.PartInfo
+        self,
+        *,
+        properties: plugins.PluginProperties,
+        part_info: infos.PartInfo,
+        zap_dependency: MatterPluginDependencyZap,
     ) -> None:
         super().__init__(properties=properties, part_info=part_info)
 
         self.matter_dir = part_info.part_build_dir
+        self.zap_install_path = zap_dependency.override_build()
 
     @overrides
     def get_build_snaps(self) -> Set[str]:
@@ -99,30 +135,13 @@ class MatterPlugin(plugins.Plugin):
 
     @overrides
     def get_build_environment(self) -> Dict[str, str]:
-        return {
-            "PATH": f"{self.matter_dir / 'bin'}:${{PATH}}",
-        }
+        return {}
 
     def _get_setup_matter(self, options) -> List[str]:
-        # TODO move to pull
         return [
-            # TODO detect changes to plugin properties
-            f"git clone --depth 1 -b {options.matter_channel} {MATTER_REPO} {self.matter_dir}",
+            f"git clone --depth 1 -b {self.options.matter_branch} {MATTER_REPO} {self.matter_dir}",
             "scripts/checkout_submodules.py --shallow --platform linux",
             "source scripts/activate.sh",
         ]
 
-    @overrides
-    def get_build_commands(self) -> List[str]:
-        options = cast(MatterPluginProperties, self._options)
 
-        matter_install_cmd: List[str] = []
-
-        if not self.matter_dir.exists():
-            matter_install_cmd = self._get_setup_matter(options)
-
-        matter_build_cmd = [
-            f"echo {options.matter_target}",
-            "echo $CRAFT_PART_INSTALL",
-        ]
-        return matter_install_cmd + matter_build_cmd
