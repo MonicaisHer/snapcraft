@@ -23,24 +23,47 @@ from craft_parts import infos, plugins
 from overrides import overrides
 
 MATTER_REPO = "https://github.com/project-chip/connectedhomeip.git"
+"""The repository where the matter SDK resides."""
 
 
 class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
-    # part properties required by the plugin
+    """The part properties used by the matter plugin."""
     # matter_branch: str
+    # zap_version: str
 
     @classmethod
     @overrides
     def unmarshal(cls, data: Dict[str, Any]) -> "MatterPluginProperties":
+        """Populate class attributes from the part specification.
+
+        :param data: A dictionary containing part properties.
+
+        :return: The populated plugin properties data object.
+
+        :raise pydantic.ValidationError: If validation fails.
+        """
         plugin_data = plugins.extract_plugin_properties(
             data,
             plugin_name="matter",
-            # required=["matter_branch"],
+            # required=["matter_branch", "zap_version"]
         )
         return cls(**plugin_data)
 
 
 class MatterPlugin(plugins.Plugin):
+    """A plugin for matter project.
+
+    This plugin uses the common plugin keywords.
+    For more information check the 'plugins' topic.
+
+    Additionally, this plugin uses the following plugin-specific keywords:
+        - matter-branch
+          (str, no default)
+          The matter branch to use for the build.
+        - zap-version
+          (str, no default)
+          The zap version to use for the build.
+    """
     properties_class = MatterPluginProperties
 
     def __init__(
