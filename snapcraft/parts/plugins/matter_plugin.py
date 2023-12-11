@@ -98,16 +98,17 @@ class MatterPlugin(plugins.Plugin):
                     "echo 'export ZAP_INSTALL_PATH=$PWD'",
                 ]
             )
-        else:
-            commands.extend(
-                [
-                    f"if [ ! -d matter ]; then git clone --depth 1 -b v1.2.0.1 {MATTER_REPO} matter; fi",
-                    "cd matter || echo 'skip clone'",
-                    f"scripts/checkout_submodules.py --shallow --platform linux",
-                    f"set +u && source scripts/activate.sh && set -u",
-                    "cp -vr ./* $CRAFT_PART_INSTALL/",
-                    "echo 'Cloned Matter repository and activated submodules'",
-                ]
-            )
+
+        commands.extend(
+            [
+                f"if [ ! -d matter ]; then git clone --depth 1 -b v1.2.0.1 {MATTER_REPO} matter; fi",
+                "cd matter || echo 'skip clone'",
+                f"scripts/checkout_submodules.py --shallow --platform linux",
+                f"set +u && source scripts/activate.sh && set -u",
+                "cp -vr ./* $CRAFT_PART_INSTALL/",
+                "echo 'Cloned Matter repository and activated submodules'",
+            ]
+        )
+            
 
         return commands
