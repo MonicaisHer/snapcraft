@@ -124,12 +124,12 @@ class MatterPlugin(plugins.Plugin):
             )
 
         # Clone Matter repository if not present
-        commands.extend(
-            [
-                f"if [ ! -d matter ]; then git clone --depth 1 -b {options.matter_sdk_version} "
-                f"{MATTER_REPO} matter && cd matter; else cd matter || echo 'skip clone'; fi"
-            ]
-        )
+        commands.extend([
+            f"if [ ! -d matter ]; then",
+            f"    git clone --depth 1 -b {options.matter_sdk_version} {MATTER_REPO} matter;",
+            f"fi",
+            "cd matter || echo 'skip clone';"
+        ])
 
         # Checkout submodules for Linux platform
         commands.extend(["scripts/checkout_submodules.py --shallow --platform linux"])
