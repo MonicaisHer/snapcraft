@@ -127,8 +127,11 @@ class MatterPlugin(plugins.Plugin):
         commands.extend([
             f"if [ ! -d matter ]; then",
             f"    git clone --depth 1 -b {options.matter_sdk_version} {MATTER_REPO} matter;",
+            f"else",
+            f"    echo 'Matter repository already exists, skip clone';",
             f"fi",
-            "cd matter || echo 'skip clone';"
+
+            "cd matter;"
         ])
 
         # Checkout submodules for Linux platform
