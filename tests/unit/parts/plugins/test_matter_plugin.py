@@ -36,7 +36,7 @@ def part_info(new_dir):
 
 def test_get_build_snaps(part_info):
     properties = MatterPlugin.properties_class.unmarshal(
-        {"matter_sdk_version": "master", "matter_zap_version": "v2023.11.13"}
+        {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
     plugin = MatterPlugin(properties=properties, part_info=part_info)
     assert plugin.get_build_snaps() == set()
@@ -44,7 +44,7 @@ def test_get_build_snaps(part_info):
 
 def test_get_build_packages(part_info):
     properties = MatterPlugin.properties_class.unmarshal(
-        {"matter_sdk_version": "master", "matter_zap_version": "v2023.11.13"}
+        {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
     plugin = MatterPlugin(properties=properties, part_info=part_info)
     assert plugin.get_build_packages() == {
@@ -71,7 +71,7 @@ def test_get_build_packages(part_info):
 
 def test_get_build_environment(part_info):
     properties = MatterPlugin.properties_class.unmarshal(
-        {"matter_sdk_version": "master", "matter_zap_version": "v2023.11.13"}
+        {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
     plugin = MatterPlugin(properties=properties, part_info=part_info)
 
@@ -80,7 +80,7 @@ def test_get_build_environment(part_info):
 
 def test_get_build_commands(part_info):
     properties = MatterPlugin.properties_class.unmarshal(
-        {"matter_sdk_version": "master", "matter_zap_version": "v2023.11.13"}
+        {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
     plugin = MatterPlugin(properties=properties, part_info=part_info)
 
