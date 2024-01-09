@@ -163,7 +163,7 @@ class MatterPlugin(plugins.Plugin):
         # and setting up the environment.
 
         commands.extend(
-            ["set +u && source setup/bootstrap.sh --platform build && set -u"]
+            ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
         )
 
         commands.extend(["echo 'Built Matter SDK'"])
