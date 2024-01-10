@@ -1,0 +1,20 @@
+name: matter-hello
+version: "1.0"
+summary: simple matter application
+description: build an application using Matter SDK and say "hello world"
+base: core22
+confinement: strict
+
+apps:
+  hello:
+    command: 
+      hello
+
+parts:
+  matter:
+    plugin: matter
+    matter-sdk-version: "master"
+    matter-zap-version: "v2023.11.13"
+  hello:
+    plugin: dump
+    source: .

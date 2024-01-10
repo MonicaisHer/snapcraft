@@ -7,6 +7,7 @@ environment:
   SNAP/colcon_ros2_humble: colcon-ros2-humble-hello
   SNAP/colcon_ros2_wrapper: colcon-ros2-wrapper
   SNAP/flutter: flutter-hello
+  SNAP/matter: matter-hello
   SNAP/python: python-hello
 
 prepare: |
