@@ -4,7 +4,5 @@ A new Matter project.
 
 ## Getting Started
 
-This project is a starting point for a Matter application.
+This project is a starting point for an simple application based on [Matter SDK](https://github.com/project-chip/connectedhomeip).
 
-For help getting started with Matter development, view the
-[Matter SDK](https://github.com/project-chip/connectedhomeip).
