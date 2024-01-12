@@ -107,7 +107,7 @@ def test_get_build_commands(part_info):
             "scripts/checkout_submodules.py --shallow --platform linux",
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPLinuxStorage.h",
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPPlatformConfig.h",
-            "set +u && source setup/bootstrap.sh --platform build && set -u",
+            "set +u && source scripts/setup/bootstrap.sh --platform build && set -u",
             "echo 'Built Matter SDK'",
         ]
     )
