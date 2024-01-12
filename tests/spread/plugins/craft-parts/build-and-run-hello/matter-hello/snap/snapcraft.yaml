@@ -6,7 +6,7 @@ base: core22
 confinement: strict
 
 apps:
-  hello-world:
+  matter-hello:
     command: bin/lighting-app
 
 parts:
