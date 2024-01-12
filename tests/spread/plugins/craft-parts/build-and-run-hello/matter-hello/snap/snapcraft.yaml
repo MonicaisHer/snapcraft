@@ -1,22 +1,13 @@
 name: matter-hello
 version: "1.0"
 summary: simple matter application
-description: build an example lighting application using Matter SDK and say "hello world"
+description: build an example lighting application using the Matter SDK and say "hello world"
 base: core22
 confinement: strict
 
 apps:
-  lighting:
-    daemon: simple
-    install-mode: disable
+  hello-world:
     command: bin/lighting-app
-    plugs:
-      - network
-      - network-bind
-      - bluez
-      - avahi-control
-      - gpio-memory-control
-      - otbr-dbus-wpan0
 
 parts:
   lighting-hello:
@@ -28,27 +19,19 @@ parts:
       craftctl default
       cd $CRAFT_PART_BUILD/matter
 
-      # Build a lighting example
+      set +u && source scripts/setup/bootstrap.sh --platform build && set -u
 
+      # Copy and replace the application files so that it will say "hello world"
+      cp -vr $CRAFT_PART_BUILD/main.cpp examples/lighting-app/linux/main.cpp
+
+      # Build a lighting example
       cd examples/lighting-app/linux
-      gn gen out/build --args='is_debug=true'
+      gn gen out/build
       ninja -C out/build
 
-      # ldd out/build/chip-lighting-app
+      ldd out/build/chip-lighting-app
       
-      # mkdir -p $CRAFT_PART_INSTALL/bin
-      # cp out/build/chip-lighting-app $CRAFT_PART_INSTALL/bin/lighting-app        
-    build-packages:
-      - gcc
-      - git
-      - g++
-      - libdbus-1-dev
-      - libglib2.0-dev
-      - libssl-dev
-      - ninja-build
-      - pkg-config
-      - python-is-python3
-      - python3-dev
-      - python3-venv
-      - unzip
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp out/build/chip-lighting-app $CRAFT_PART_INSTALL/bin/lighting-app        
+
 
