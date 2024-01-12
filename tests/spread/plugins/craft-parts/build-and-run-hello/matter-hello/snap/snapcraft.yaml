@@ -19,12 +19,12 @@ parts:
       craftctl default
       cd $CRAFT_PART_BUILD/matter
 
-      set +u && source scripts/setup/bootstrap.sh --platform build && set -u
+      # set +u && source scripts/setup/bootstrap.sh --platform build && set -u
 
-      # Copy and replace the application files so that it will say "hello world"
-      cp -vr $CRAFT_PART_BUILD/main.cpp examples/lighting-app/linux/main.cpp
+      # Overwrite the main application file so that it prints "hello world"
+      cp -v $CRAFT_PART_BUILD/main.cpp examples/lighting-app/linux/main.cpp
 
-      # Build a lighting example
+      # Build the lighting app
       cd examples/lighting-app/linux
       gn gen out/build
       ninja -C out/build
