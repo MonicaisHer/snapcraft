@@ -90,7 +90,7 @@ def test_get_build_commands(part_info):
         expected_commands.extend(
             [
                 f"wget --no-verbose https://github.com/project-chip/zap/releases/download/"
-                f"{properties.matter_zap_version}/zap-linux-arm64.zip",
+                f"{part_info.plugin.options.matter_zap_version}/zap-linux-arm64.zip",
                 "unzip -o zap-linux-arm64.zip",
                 "echo 'export ZAP_INSTALL_PATH=$PWD'",
             ]
@@ -99,7 +99,7 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "if [ ! -d matter ]; then",
-            f"    git clone --depth 1 -b {properties.matter_sdk_version} {MATTER_REPO} matter;",
+            f"    git clone --depth 1 -b {part_info.plugin.options.matter_sdk_version} {MATTER_REPO} matter;",
             "else",
             "    echo 'Matter repository already exists, skip clone';",
             "fi",
