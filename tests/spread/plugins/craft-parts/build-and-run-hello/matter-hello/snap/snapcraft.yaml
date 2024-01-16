@@ -19,19 +19,16 @@ parts:
       craftctl default
       cd $CRAFT_PART_BUILD/matter
 
-      # set +u && source scripts/setup/bootstrap.sh --platform build && set -u
-
       # Overwrite the main application file so that it prints "hello world"
       cp -v $CRAFT_PART_BUILD/main.cpp examples/lighting-app/linux/main.cpp
 
       # Build the lighting app
-      cd examples/lighting-app/linux
-      gn gen out/build
-      ninja -C out/build
-
+      scripts/examples/gn_build_example.sh examples/lighting-app/linux/ ./out/build
+      
       ldd out/build/chip-lighting-app
       
       mkdir -p $CRAFT_PART_INSTALL/bin
-      cp out/build/chip-lighting-app $CRAFT_PART_INSTALL/bin/lighting-app        
+      cp out/build/chip-lighting-app $CRAFT_PART_INSTALL/bin/lighting-app   
+    
 
 
