@@ -84,13 +84,16 @@ def test_get_build_commands(part_info):
     )
     plugin = MatterPlugin(properties=properties, part_info=part_info)
 
+    sdk_version = properties.matter_sdk_version  # type: ignore
+    zap_version = properties.matter_zap_version  # type: ignore
+
     expected_commands = []
 
     if plugin.snap_arch == "arm64":
         expected_commands.extend(
             [
                 f"wget --no-verbose https://github.com/project-chip/zap/releases/download/"
-                f"{part_info.plugin.options.matter_zap_version}/zap-linux-arm64.zip",
+                f"{zap_version}/zap-linux-arm64.zip",
                 "unzip -o zap-linux-arm64.zip",
                 "echo 'export ZAP_INSTALL_PATH=$PWD'",
             ]
@@ -99,7 +102,7 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "if [ ! -d matter ]; then",
-            f"    git clone --depth 1 -b {part_info.plugin.options.matter_sdk_version} {MATTER_REPO} matter;",
+            f"    git clone --depth 1 -b {sdk_version} {MATTER_REPO} matter;",
             "else",
             "    echo 'Matter repository already exists, skip clone';",
             "fi",
