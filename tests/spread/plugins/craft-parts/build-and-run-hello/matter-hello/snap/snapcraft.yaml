@@ -12,7 +12,7 @@ apps:
 parts:
   lighting-hello:
     plugin: matter
-    matter-sdk-version: "master"
+    matter-sdk-version: "1536ca2" # use this commit with ptpython version fix; needs to be updated once sdk have a stable release
     matter-zap-version: "v2023.11.13"
     source: app
     override-build: |

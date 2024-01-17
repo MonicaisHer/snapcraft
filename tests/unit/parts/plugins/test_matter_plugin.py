@@ -102,11 +102,11 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "if [ ! -d matter ]; then",
-            f"    git clone --depth 1 -b {sdk_version} {MATTER_REPO} matter;",
+            f"    git clone {MATTER_REPO} matter && cd matter && git checkout {options.matter_sdk_version};",
             "else",
             "    echo 'Matter repository already exists, skip clone';",
+            "    cd matter;",
             "fi",
-            "cd matter;",
             "scripts/checkout_submodules.py --shallow --platform linux",
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPLinuxStorage.h",
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPPlatformConfig.h",
