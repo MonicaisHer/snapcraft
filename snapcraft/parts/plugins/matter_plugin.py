@@ -117,7 +117,7 @@ class MatterPlugin(plugins.Plugin):
         if self.snap_arch == "arm64":
             commands.extend(
                 [
-                    f"wget --no-verbose https://github.com/project-chip/zap/releases/download/"
+                    "wget --no-verbose https://github.com/project-chip/zap/releases/download/"
                     f"{options.matter_zap_version}/zap-linux-{self.snap_arch}.zip",
                     f"unzip -o zap-linux-{self.snap_arch}.zip",
                     "echo 'export ZAP_INSTALL_PATH=$PWD'",
@@ -125,16 +125,17 @@ class MatterPlugin(plugins.Plugin):
             )
 
         # Clone Matter repository if not present
-        commands.extend(
-            [
-                "if [ ! -d matter ]; then",
-                f"    git clone {MATTER_REPO} matter && cd matter && git checkout {options.matter_sdk_version};",
-                "else",
-                "    echo 'Matter repository already exists, skip clone';",
-                "    cd matter;",
-                "fi",
-            ]
-        )
+        commands.extend([
+            "if [ ! -d matter ]; then",
+            f"    git clone {MATTER_REPO} matter",
+            "    cd matter",
+            "    git config advice.detachedHead false",
+            f"    git checkout {options.matter_sdk_version};",
+            "else",
+            "    echo 'Matter repository already exists, skip clone'",
+            "    cd matter;",
+            "fi",
+        ])
 
         # Checkout submodules for Linux platform
         commands.extend(["scripts/checkout_submodules.py --shallow --platform linux"])
