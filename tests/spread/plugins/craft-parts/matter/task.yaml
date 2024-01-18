@@ -1,0 +1,41 @@
+summary: Craft Parts matter plugin test
+manual: true
+kill-timeout: 180m
+
+systems:
+  - ubuntu-22.04-64
+
+prepare: |
+  #shellcheck source=tests/spread/tools/snapcraft-yaml.sh
+  . "$TOOLS_DIR/snapcraft-yaml.sh"
+  set_base "$SNAP/snap/snapcraft.yaml"
+
+restore: |
+  cd "$SNAP"
+  snapcraft clean
+  rm -f ./*.snap
+
+  #shellcheck source=tests/spread/tools/snapcraft-yaml.sh
+  . "$TOOLS_DIR/snapcraft-yaml.sh"
+  restore_yaml "snap/snapcraft.yaml"
+
+execute: |
+  cd "$SNAP"
+
+  # Build and install the snap
+  snapcraft
+  snap install "${SNAP}"*.snap --dangerous
+
+  # Start lighting app
+  snap start matter-lighting
+
+  # Check if storage path replacement from /tmp to /mnt works
+  if [ -e /tmp/chip_* ]; then
+      echo "Error: /tmp/chip_* should not exist."
+      exit 1
+  fi
+
+  if [ ! -e /mnt/chip_* ]; then
+      echo "Error: /mnt/chip_* does not exist."
+      exit 1
+  fi
