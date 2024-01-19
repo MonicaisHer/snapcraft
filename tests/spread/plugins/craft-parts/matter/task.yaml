@@ -26,16 +26,15 @@ execute: |
   snapcraft
   snap install "${SNAP}"*.snap --dangerous
 
-  # Start lighting app
   snap start matter-lighting
 
-  # Check if storage path replacement from /tmp to /mnt works
+  # Check if storage path replacement from /tmp to SNAP_COMMON/mnt works
   if [ -e /tmp/chip_* ]; then
-      echo "Error: /tmp/chip_* should not exist."
-      exit 1
+    echo "Error: /tmp/chip_* should not exist."
+    exit 1
   fi
 
-  if [ ! -e /mnt/chip_* ]; then
-      echo "Error: /mnt/chip_* does not exist."
-      exit 1
+  if [ ! -e "${SNAP_COMMON/mnt/chip_*}" ]; then
+    echo "Error: $SNAP_COMMON/mnt/chip_* does not exist."
+    exit 1
   fi

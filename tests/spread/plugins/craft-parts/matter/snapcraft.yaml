@@ -1,6 +1,9 @@
 name: matter-lighting
 summary: Matter plugin test
 description: An lighting application to test the matter plugin.
+version: "1.0"
+
+base: core22
 
 grade: stable
 build-base: core22
@@ -12,24 +15,20 @@ layout:
 
 apps:
   matter-lighting:
+    daemon: simple
     command: bin/lighting-app
+    install-mode: disable
 
 parts:
   matter-lighting:
     plugin: matter
-    matter-sdk-version: "master"
+    matter-sdk-version: "1536ca2" # use this commit with ptpython version fix; needs to be updated once sdk have a stable release
     matter-zap-version: "v2023.11.13"
-    source: app
     override-build: |
       craftctl default
       cd $CRAFT_PART_BUILD/matter
 
-      # Overwrite the main application file so that it prints "hello world"
-      cp -v $CRAFT_PART_BUILD/main.cpp examples/lighting-app/linux/main.cpp
-
-      cd examples/lighting-app/linux
-      gn gen out/build
-      ninja -C out/build
+      scripts/examples/gn_build_example.sh examples/lighting-app/linux/ ./out/build
 
       ldd out/build/chip-lighting-app
       
