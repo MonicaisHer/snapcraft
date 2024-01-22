@@ -170,9 +170,12 @@ class MatterSdkPlugin(plugins.Plugin):
         commands.extend(["echo 'Built Matter SDK'"])
 
         # Output environment variables to env file
+        # Remove environment variables related to snapcraft part
         commands.extend(
             [
                 "env > matter_sdk_env",
+                r"sed -i '/^CRAFT_PART_/d' matter_sdk_env",
+                r"sed -i '/^SNAPCRAFT_PART_/d' matter_sdk_env",
                 "echo 'Environment variables exported to matter_sdk_env file'",
             ]
         )

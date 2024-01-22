@@ -133,6 +133,8 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "env > matter_sdk_env",
+            r"sed -i '/^CRAFT_PART_/d' matter_sdk_env",
+            r"sed -i '/^SNAPCRAFT_PART_/d' matter_sdk_env",
             "echo 'Environment variables exported to matter_sdk_env file'",
         ]
     )
