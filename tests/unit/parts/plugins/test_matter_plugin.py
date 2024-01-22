@@ -137,6 +137,4 @@ def test_get_build_commands(part_info):
         ]
     )
 
-
-
     assert plugin.get_build_commands() == expected_commands
