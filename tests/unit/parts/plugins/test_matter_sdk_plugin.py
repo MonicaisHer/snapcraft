@@ -18,10 +18,10 @@
 import pytest
 from craft_parts import Part, PartInfo, ProjectInfo
 
-from snapcraft.parts.plugins import MatterPlugin
+from snapcraft.parts.plugins import MatterSdkPlugin
 
 # The repository where the matter SDK resides.
-MATTER_REPO = "https://github.com/project-chip/connectedhomeip.git"
+MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip.git"
 
 
 @pytest.fixture(autouse=True)
@@ -35,18 +35,18 @@ def part_info(new_dir):
 
 
 def test_get_build_snaps(part_info):
-    properties = MatterPlugin.properties_class.unmarshal(
+    properties = MatterSdkPlugin.properties_class.unmarshal(
         {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
-    plugin = MatterPlugin(properties=properties, part_info=part_info)
+    plugin = MatterSdkPlugin(properties=properties, part_info=part_info)
     assert plugin.get_build_snaps() == set()
 
 
 def test_get_build_packages(part_info):
-    properties = MatterPlugin.properties_class.unmarshal(
+    properties = MatterSdkPlugin.properties_class.unmarshal(
         {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
-    plugin = MatterPlugin(properties=properties, part_info=part_info)
+    plugin = MatterSdkPlugin(properties=properties, part_info=part_info)
     assert plugin.get_build_packages() == {
         "clang",
         "cmake",
@@ -70,19 +70,19 @@ def test_get_build_packages(part_info):
 
 
 def test_get_build_environment(part_info):
-    properties = MatterPlugin.properties_class.unmarshal(
+    properties = MatterSdkPlugin.properties_class.unmarshal(
         {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
-    plugin = MatterPlugin(properties=properties, part_info=part_info)
+    plugin = MatterSdkPlugin(properties=properties, part_info=part_info)
 
     assert plugin.get_build_environment() == {}
 
 
 def test_get_build_commands(part_info):
-    properties = MatterPlugin.properties_class.unmarshal(
+    properties = MatterSdkPlugin.properties_class.unmarshal(
         {"matter-sdk-version": "master", "matter-zap-version": "v2023.11.13"}
     )
-    plugin = MatterPlugin(properties=properties, part_info=part_info)
+    plugin = MatterSdklugin(properties=properties, part_info=part_info)
 
     sdk_version = properties.matter_sdk_version  # type: ignore
     zap_version = properties.matter_zap_version  # type: ignore
@@ -101,15 +101,15 @@ def test_get_build_commands(part_info):
 
     expected_commands.extend(
         [
-            "if [ ! -d matter ]; then",
-            "    git init matter",
-            "    cd matter",
-            f"    git remote add origin {MATTER_REPO}",
+            "if [ ! -d matter-sdk ]; then",
+            "    git init matter-sdk",
+            "    cd matter-sdk",
+            f"    git remote add origin {MATTER_SDK_REPO}",
             f"    git fetch --depth 1 origin {sdk_version}",
             "    git checkout FETCH_HEAD",
             "else",
             "    echo 'Matter SDK repository already exists, skip clone'",
-            "    cd matter;",
+            "    cd matter-sdk;",
             "fi",
         ]
     )
@@ -133,7 +133,7 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "env > matter_sdk_env",
-            "echo 'Environment variables exported to matter_sdk_env file'"
+            "echo 'Environment variables exported to matter_sdk_env file'",
         ]
     )
 

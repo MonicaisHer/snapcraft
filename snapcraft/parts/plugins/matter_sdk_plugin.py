@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""The matter plugin."""
+"""The matter SDK plugin."""
 import os
 from typing import Any, Dict, List, Set, cast
 
@@ -26,14 +26,14 @@ MATTER_REPO = "https://github.com/project-chip/connectedhomeip.git"
 
 
 class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
-    """The part properties used by the matter plugin."""
+    """The part properties used by the matter SDK plugin."""
 
     matter_sdk_version: str
     matter_zap_version: str
 
     @classmethod
     @overrides
-    def unmarshal(cls, data: Dict[str, Any]) -> "MatterPluginProperties":
+    def unmarshal(cls, data: Dict[str, Any]) -> "MatterSdkPluginProperties":
         """Populate class attributes from the part specification.
 
         :param data: A dictionary containing part properties.
@@ -44,14 +44,14 @@ class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
         """
         plugin_data = plugins.extract_plugin_properties(
             data,
-            plugin_name="matter",
+            plugin_name="matter-sdk",
             required=["matter_sdk_version", "matter_zap_version"],
         )
         return cls(**plugin_data)
 
 
-class MatterPlugin(plugins.Plugin):
-    """A plugin for matter project.
+class MatterSdkPlugin(plugins.Plugin):
+    """A plugin for matter SDK project.
 
     This plugin uses the common plugin keywords.
     For more information check the 'plugins' topic.
@@ -65,7 +65,7 @@ class MatterPlugin(plugins.Plugin):
           The zap version to use for the build.
     """
 
-    properties_class = MatterPluginProperties
+    properties_class = MatterSdkPluginProperties
 
     def __init__(
         self,
@@ -75,7 +75,7 @@ class MatterPlugin(plugins.Plugin):
     ) -> None:
         super().__init__(properties=properties, part_info=part_info)
 
-        self.matter_dir = part_info.part_build_dir
+        self.matter_sdk_dir = part_info.part_build_dir
         self.snap_arch = os.getenv("SNAP_ARCH")
 
     @overrides
@@ -111,7 +111,7 @@ class MatterPlugin(plugins.Plugin):
 
     @overrides
     def get_build_commands(self) -> List[str]:
-        options = cast(MatterPluginProperties, self._options)
+        options = cast(MatterSdkPluginProperties, self._options)
         commands = []
 
         if self.snap_arch == "arm64":
@@ -124,18 +124,18 @@ class MatterPlugin(plugins.Plugin):
                 ]
             )
 
-        # Clone Matter repository if not present
+        # Clone Matter SDK repository if not present
         commands.extend(
             [
             "if [ ! -d matter ]; then",
-            "    git init matter",
-            "    cd matter",
-            f"    git remote add origin {MATTER_REPO}",
+            "    git init matter-sdk",
+            "    cd matter-sdk",
+            f"    git remote add origin {MATTER_SDK_REPO}",
             f"    git fetch --depth 1 origin {options.matter_sdk_version}",
             "    git checkout FETCH_HEAD",
             "else",
             "    echo 'Matter SDK repository already exists, skip clone'",
-            "    cd matter;",
+            "    cd matter-sdk;",
             "fi",]
         )
 
@@ -169,10 +169,12 @@ class MatterPlugin(plugins.Plugin):
 
         commands.extend(["echo 'Built Matter SDK'"])
 
+        # Output environment variables to env file
         commands.extend(
             [
-            "env > matter_sdk_env",
-            "echo 'Environment variables exported to matter_sdk_env file'"]
+                "env > matter_sdk_env",
+                "echo 'Environment variables exported to matter_sdk_env file'",
+            ]
         )
 
         return commands
