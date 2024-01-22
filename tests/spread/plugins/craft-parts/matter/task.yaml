@@ -35,6 +35,13 @@ execute: |
   fi
 
   if [ ! -e "${SNAP_COMMON/mnt/chip_*}" ]; then
-    echo "Error: $SNAP_COMMON/mnt/chip_* does not exist."
+    echo "Error: ${SNAP_COMMON}/mnt/chip_* does not exist."
     exit 1
   fi
+
+  # Check if server initialization is complete for matter-lighting
+  if ! journalctl --since "$start_time" | grep matter-lighting | grep "CHIP:SVR: Server initialization complete"; then
+    echo "Error: matter-lighting initialization failed."
+    exit 1
+  fi
+  

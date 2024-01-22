@@ -127,12 +127,13 @@ class MatterPlugin(plugins.Plugin):
         # Clone Matter repository if not present
         commands.extend([
             "if [ ! -d matter ]; then",
-            f"    git clone {MATTER_REPO} matter",
+            "    git init matter",
             "    cd matter",
-            "    git config advice.detachedHead false",
-            f"    git checkout {options.matter_sdk_version};",
+            f"    git remote add origin {MATTER_REPO}",
+            f"    git fetch --depth 1 origin {options.matter_sdk_version}",
+            "    git checkout FETCH_HEAD",
             "else",
-            "    echo 'Matter repository already exists, skip clone'",
+            "    echo 'Matter SDK repository already exists, skip clone'",
             "    cd matter;",
             "fi",
         ])
