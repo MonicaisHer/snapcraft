@@ -26,7 +26,7 @@ apps:
 
 parts:
   matter-sdk:
-    plugin: matter
+    plugin: "1536ca2" # use this commit with ptpython version fix; needs to be updated once matter sdk have a stable release
     matter-sdk-version: "master"
     matter-zap-version: "v2023.11.13"
 

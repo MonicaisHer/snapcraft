@@ -26,6 +26,7 @@ execute: |
   snapcraft
   snap install "${SNAP}"*.snap --dangerous
 
+  start_time=$(date +"%Y-%m-%d %H:%M:%S")
   snap start matter-lighting
 
   # Check if storage path replacement from /tmp to SNAP_COMMON/mnt works
