@@ -30,10 +30,12 @@ execute: |
   snap start matter-lighting
 
   # Check if storage path replacement from /tmp to SNAP_COMMON/mnt works
-  if [ -e /tmp/chip_* ]; then
-    echo "Error: /tmp/chip_* should not exist."
-    exit 1
-  fi
+  for file in /tmp/chip_*; do
+    if [ -e "$file" ]; then
+      echo "Error: $file should not exist."
+      exit 1
+    fi
+  done
 
   if [ ! -e "${SNAP_COMMON/mnt/chip_*}" ]; then
     echo "Error: ${SNAP_COMMON}/mnt/chip_* does not exist."

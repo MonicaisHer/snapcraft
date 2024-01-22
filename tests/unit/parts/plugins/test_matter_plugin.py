@@ -102,9 +102,13 @@ def test_get_build_commands(part_info):
     expected_commands.extend(
         [
             "if [ ! -d matter ]; then",
-            f"    git clone {MATTER_REPO} matter && cd matter && git checkout {options.matter_sdk_version};",
+            "    git init matter",
+            "    cd matter",
+            f"    git remote add origin {MATTER_REPO}",
+            f"    git fetch --depth 1 origin {sdk_version}",
+            "    git checkout FETCH_HEAD",
             "else",
-            "    echo 'Matter repository already exists, skip clone';",
+            "    echo 'Matter SDK repository already exists, skip clone'",
             "    cd matter;",
             "fi",
             "scripts/checkout_submodules.py --shallow --platform linux",
