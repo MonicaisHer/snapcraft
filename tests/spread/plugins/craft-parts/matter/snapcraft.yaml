@@ -26,8 +26,8 @@ apps:
 
 parts:
   matter-sdk:
-    plugin: "1536ca2" # use this commit with ptpython version fix; needs to be updated once matter sdk have a stable release
-    matter-sdk-version: "master"
+    plugin: matter
+    matter-sdk-version: "1536ca20c5917578ca40ce509400e97b52751788" # use this commit with ptpython version fix; needs to be updated once matter sdk have a stable release
     matter-zap-version: "v2023.11.13"
 
   lighting-hello:
@@ -36,8 +36,12 @@ parts:
     override-build: |
       cd ../../matter-sdk/build/matter
 
+      source matter_sdk_env
+
       # Build the lighting app
-      scripts/examples/gn_build_example.sh examples/lighting-app/linux/ ./out/build
+      cd examples/lighting-app/linux
+      gn gen out/build
+      ninja -C out/build
       
       ldd out/build/chip-lighting-app
       

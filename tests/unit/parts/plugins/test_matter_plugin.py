@@ -111,12 +111,32 @@ def test_get_build_commands(part_info):
             "    echo 'Matter SDK repository already exists, skip clone'",
             "    cd matter;",
             "fi",
-            "scripts/checkout_submodules.py --shallow --platform linux",
+        ]
+    )
+
+    expected_commands.extend(["scripts/checkout_submodules.py --shallow --platform linux",])
+
+    expected_commands.extend(
+        [
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPLinuxStorage.h",
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPPlatformConfig.h",
+        ]
+    )
+
+    expected_commands.extend(
+        [
             "set +u && source scripts/setup/bootstrap.sh --platform build && set -u",
             "echo 'Built Matter SDK'",
         ]
     )
+
+    expected_commands.extend(
+        [
+            "env > matter_sdk_env",
+            "echo 'Environment variables exported to matter_sdk_env file'"
+        ]
+    )
+
+
 
     assert plugin.get_build_commands() == expected_commands

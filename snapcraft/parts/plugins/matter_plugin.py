@@ -125,7 +125,8 @@ class MatterPlugin(plugins.Plugin):
             )
 
         # Clone Matter repository if not present
-        commands.extend([
+        commands.extend(
+            [
             "if [ ! -d matter ]; then",
             "    git init matter",
             "    cd matter",
@@ -135,8 +136,8 @@ class MatterPlugin(plugins.Plugin):
             "else",
             "    echo 'Matter SDK repository already exists, skip clone'",
             "    cd matter;",
-            "fi",
-        ])
+            "fi",]
+        )
 
         # Checkout submodules for Linux platform
         commands.extend(["scripts/checkout_submodules.py --shallow --platform linux"])
@@ -164,10 +165,14 @@ class MatterPlugin(plugins.Plugin):
         # Bootstrapping script for building Matter SDK with minimal "build" requirements
         # and setting up the environment.
 
-        commands.extend(
-            ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
-        )
+        commands.extend(["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"])
 
         commands.extend(["echo 'Built Matter SDK'"])
+
+        commands.extend(
+            [
+            "env > matter_sdk_env",
+            "echo 'Environment variables exported to matter_sdk_env file'"]
+        )
 
         return commands
