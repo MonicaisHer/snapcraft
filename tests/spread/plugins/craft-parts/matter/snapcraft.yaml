@@ -29,11 +29,20 @@ parts:
     plugin: matter
     matter-sdk-version: "1536ca20c5917578ca40ce509400e97b52751788" # use this commit with ptpython version fix; needs to be updated once matter sdk have a stable release
     matter-zap-version: "v2023.11.13"
+    override-build: |
+      craftctl default
 
-  lighting-hello:
+      # Remove snapcraft part related environment variables
+      cd matter
+      sed -i '/^CRAFT_PART_/d' matter_sdk_env
+      sed -i '/^SNAPCRAFT_PART_/d' matter_sdk_env
+
+  lighting:
     plugin: nil
     after: [matter-sdk]
     override-build: |
+      craftctl default
+
       cd ../../matter-sdk/build/matter
 
       source matter_sdk_env
