@@ -22,14 +22,14 @@ from craft_parts import infos, plugins
 from overrides import overrides
 
 # The repository where the matter SDK resides.
-MATTER_REPO = "https://github.com/project-chip/connectedhomeip.git"
+MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip.git"
 
 
-class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
+class MatterSdkPluginProperties(plugins.PluginProperties, plugins.PluginModel):
     """The part properties used by the matter SDK plugin."""
 
     matter_sdk_version: str
-    matter_zap_version: str
+    matter_sdk_zap_version: str
 
     @classmethod
     @overrides
@@ -45,7 +45,7 @@ class MatterPluginProperties(plugins.PluginProperties, plugins.PluginModel):
         plugin_data = plugins.extract_plugin_properties(
             data,
             plugin_name="matter-sdk",
-            required=["matter_sdk_version", "matter_zap_version"],
+            required=["matter_sdk_version", "matter_sdk_zap_version"],
         )
         return cls(**plugin_data)
 
@@ -60,7 +60,7 @@ class MatterSdkPlugin(plugins.Plugin):
         - matter-sdk-version
           (str, no default)
           The matter SDK version to use for the build.
-        - matter-zap-version
+        - matter-sdk-zap-version
           (str, no default)
           The zap version to use for the build.
     """
@@ -118,7 +118,7 @@ class MatterSdkPlugin(plugins.Plugin):
             commands.extend(
                 [
                     "wget --no-verbose https://github.com/project-chip/zap/releases/download/"
-                    f"{options.matter_zap_version}/zap-linux-{self.snap_arch}.zip",
+                    f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
                     f"unzip -o zap-linux-{self.snap_arch}.zip",
                     "echo 'export ZAP_INSTALL_PATH=$PWD'",
                 ]
@@ -130,8 +130,8 @@ class MatterSdkPlugin(plugins.Plugin):
             "if [ ! -d matter ]; then",
             "    git init matter-sdk",
             "    cd matter-sdk",
-            f"    git remote add origin {MATTER_SDK_REPO}",
-            f"    git fetch --depth 1 origin {options.matter_sdk_version}",
+            f"   git remote add origin {MATTER_SDK_REPO}",
+            f"   git fetch --depth 1 origin {options.matter_sdk_version}",
             "    git checkout FETCH_HEAD",
             "else",
             "    echo 'Matter SDK repository already exists, skip clone'",
