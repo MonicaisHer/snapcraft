@@ -34,6 +34,47 @@ def part_info(new_dir):
     )
 
 
+def test_get_pull_commands(part_info):
+    properties = MatterSdkPlugin.properties_class.unmarshal(
+        {"matter-sdk-version": "master", "matter-sdk-zap-version": "v2023.11.13"}
+    )
+    plugin = MatterSdkPlugin(properties=properties, part_info=part_info)
+
+    sdk_version = properties.matter_sdk_version  # type: ignore
+    zap_version = properties.matter_sdk_zap_version  # type: ignore
+
+    expected_commands = []
+
+    if plugin.snap_arch == "arm64":
+        expected_commands.extend(
+            [
+                f"wget --no-verbose {ZAP_REPO}/releases/download/"
+                f"{zap_version}/zap-linux-arm64.zip",
+                "unzip -o zap-linux-arm64.zip",
+                "echo 'export ZAP_INSTALL_PATH=$PWD'",
+            ]
+        )
+
+    expected_commands.extend(
+        [
+            "if [ ! -d matter ]; then",
+            "    git init",
+            f"   git remote add origin {MATTER_SDK_REPO}",
+            f"   git fetch --depth 1 origin {sdk_version}",
+            "    git checkout FETCH_HEAD",
+            "fi",
+        ]
+    )
+
+    expected_commands.extend(
+        [
+            "scripts/checkout_submodules.py --shallow --platform linux",
+        ]
+    )
+
+    assert plugin.get_pull_commands() == expected_commands
+
+
 def test_get_build_snaps(part_info):
     properties = MatterSdkPlugin.properties_class.unmarshal(
         {"matter-sdk-version": "master", "matter-sdk-zap-version": "v2023.11.13"}
@@ -89,32 +130,6 @@ def test_get_build_commands(part_info):
 
     expected_commands = []
 
-    if plugin.snap_arch == "arm64":
-        expected_commands.extend(
-            [
-                f"wget --no-verbose https://github.com/project-chip/zap/releases/download/"
-                f"{zap_version}/zap-linux-arm64.zip",
-                "unzip -o zap-linux-arm64.zip",
-                "echo 'export ZAP_INSTALL_PATH=$PWD'",
-            ]
-        )
-
-    expected_commands.extend(
-        [
-            "if [ ! -d matter ]; then",
-            "    git init matter-sdk",
-            "    cd matter-sdk",
-            f"   git remote add origin {MATTER_SDK_REPO}",
-            f"   git fetch --depth 1 origin {sdk_version}",
-            "    git checkout FETCH_HEAD",
-            "else",
-            "    echo 'Matter SDK repository already exists, skip clone'",
-            "    cd matter-sdk;",
-            "fi",]
-    )
-
-    expected_commands.extend(["scripts/checkout_submodules.py --shallow --platform linux",])
-
     expected_commands.extend(
         [
             r"sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPLinuxStorage.h",
@@ -122,19 +137,23 @@ def test_get_build_commands(part_info):
         ]
     )
 
+    expected_commands.extend(["initial_environment=$(printenv)"])
+
     expected_commands.extend(
-        [
-            "set +u && source scripts/setup/bootstrap.sh --platform build && set -u",
-            "echo 'Built Matter SDK'",
-        ]
+        ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
     )
+    expected_commands.extend(["echo 'Built Matter SDK'"])
+
+    expected_commands.extend(["updated_environment=$(printenv)"])
 
     expected_commands.extend(
         [
-            "env > matter_sdk_env",
-            r"sed -i '/^CRAFT_PART_/d' matter_sdk_env",
-            r"sed -i '/^SNAPCRAFT_PART_/d' matter_sdk_env",
-            "echo 'Environment variables exported to matter_sdk_env file'",
+            f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n' | sort) \\",
+            f" <(echo $updated_environment | tr ' ' '\n' | sort) | awk '{{print $1}}')",
+            "for env in $environment_differences; do",
+            f'    echo "export $env" >> matter_sdk_env',
+            "done",
+            "echo 'Environment variables differences exported to matter_sdk_env file'",
         ]
     )
 

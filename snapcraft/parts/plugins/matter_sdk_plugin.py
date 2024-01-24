@@ -23,6 +23,7 @@ from overrides import overrides
 
 # The repository where the matter SDK resides.
 MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip.git"
+ZAP_REPO = "https://github.com/project-chip/zap"
 
 
 class MatterSdkPluginProperties(plugins.PluginProperties, plugins.PluginModel):
@@ -79,6 +80,38 @@ class MatterSdkPlugin(plugins.Plugin):
         self.snap_arch = os.getenv("SNAP_ARCH")
 
     @overrides
+    def get_pull_commands(self) -> List[str]:
+        options = cast(MatterSdkPluginProperties, self._options)
+        commands = []
+
+        if self.snap_arch == "arm64":
+            commands.extend(
+                [
+                    f"wget --no-verbose {ZAP_REPO}/releases/download/"
+                    f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
+                    f"unzip -o zap-linux-{self.snap_arch}.zip -d zap",
+                    "echo 'export ZAP_INSTALL_PATH=$PWD/zap'",
+                ]
+            )
+
+        # Clone Matter SDK repository
+        commands.extend(
+            [
+                "if [ ! -d matter ]; then",
+                "    git init",
+                f"   git remote add origin {MATTER_SDK_REPO}",
+                f"   git fetch --depth 1 origin {options.matter_sdk_version}",
+                "    git checkout FETCH_HEAD",
+                "fi",
+            ]
+        )
+
+        # Checkout submodules for Linux platform
+        commands.extend(["scripts/checkout_submodules.py --shallow --platform linux"])
+
+        return commands
+
+    @overrides
     def get_build_packages(self) -> Set[str]:
         return {
             "clang",
@@ -114,34 +147,6 @@ class MatterSdkPlugin(plugins.Plugin):
         options = cast(MatterSdkPluginProperties, self._options)
         commands = []
 
-        if self.snap_arch == "arm64":
-            commands.extend(
-                [
-                    "wget --no-verbose https://github.com/project-chip/zap/releases/download/"
-                    f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
-                    f"unzip -o zap-linux-{self.snap_arch}.zip",
-                    "echo 'export ZAP_INSTALL_PATH=$PWD'",
-                ]
-            )
-
-        # Clone Matter SDK repository if not present
-        commands.extend(
-            [
-            "if [ ! -d matter ]; then",
-            "    git init matter-sdk",
-            "    cd matter-sdk",
-            f"   git remote add origin {MATTER_SDK_REPO}",
-            f"   git fetch --depth 1 origin {options.matter_sdk_version}",
-            "    git checkout FETCH_HEAD",
-            "else",
-            "    echo 'Matter SDK repository already exists, skip clone'",
-            "    cd matter-sdk;",
-            "fi",]
-        )
-
-        # Checkout submodules for Linux platform
-        commands.extend(["scripts/checkout_submodules.py --shallow --platform linux"])
-
         # The project writes its data to /tmp which isn't persisted.
 
         # Setting TMPDIR env var when running the app isn't sufficient as
@@ -151,8 +156,8 @@ class MatterSdkPlugin(plugins.Plugin):
 
         # Snap does not allow bind mounting a persistent directory on /tmp,
         # so we need to replace it in the source with another path, e.g. /mnt.
-        # See the top-level layout definition which bind mounts a persisted
-        # directory within the confined snap space on /mnt.
+        # The consumer snap needs to bind mount a persisted directory within
+        # the confined snap space on /mnt.
 
         # Replace storage paths
         commands.extend(
@@ -162,21 +167,28 @@ class MatterSdkPlugin(plugins.Plugin):
             ]
         )
 
+        # Capture initial environment variables
+        commands.extend(["initial_environment=$(printenv)"])
+
         # Bootstrapping script for building Matter SDK with minimal "build" requirements
         # and setting up the environment.
-
-        commands.extend(["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"])
-
+        commands.extend(
+            ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
+        )
         commands.extend(["echo 'Built Matter SDK'"])
 
-        # Output environment variables to env file
-        # Remove environment variables related to snapcraft part
+        # Capture updated environment variables after the bootstrapping
+        commands.extend(["updated_environment=$(printenv)"])
+
+        # Compare and output environment variable differences to matter_sdk_env env file
         commands.extend(
             [
-                "env > matter_sdk_env",
-                r"sed -i '/^CRAFT_PART_/d' matter_sdk_env",
-                r"sed -i '/^SNAPCRAFT_PART_/d' matter_sdk_env",
-                "echo 'Environment variables exported to matter_sdk_env file'",
+                f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n' | sort) \\",
+                f" <(echo $updated_environment | tr ' ' '\n' | sort) | awk '{{print $1}}')",
+                "for env in $environment_differences; do",
+                f'    echo "export $env" >> matter_sdk_env',
+                "done",
+                "echo 'Environment variables differences exported to matter_sdk_env file'",
             ]
         )
 
