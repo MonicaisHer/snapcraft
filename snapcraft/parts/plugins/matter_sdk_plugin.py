@@ -145,7 +145,6 @@ class MatterSdkPlugin(plugins.Plugin):
 
     @overrides
     def get_build_commands(self) -> List[str]:
-        options = cast(MatterSdkPluginProperties, self._options)
         commands = []
 
         # The project writes its data to /tmp which isn't persisted.
@@ -185,7 +184,8 @@ class MatterSdkPlugin(plugins.Plugin):
                 'echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> matter_sdk_env',
                 'echo "CIPD_CACHE_DIR=$CIPD_CACHE_DIR" >> matter_sdk_env',
                 "set +a",
-                "echo 'pigweed related environment variables differences exported to matter_sdk_env file'",
+                "echo 'pigweed related environment variables differences exported",
+                "to matter_sdk_env file'",
             ]
         )
 

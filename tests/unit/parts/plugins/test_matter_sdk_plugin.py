@@ -149,7 +149,8 @@ def test_get_build_commands(part_info):
             'echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> matter_sdk_env',
             'echo "CIPD_CACHE_DIR=$CIPD_CACHE_DIR" >> matter_sdk_env',
             "set +a",
-            "echo 'pigweed related environment variables differences exported to matter_sdk_env file'",
+            "echo 'pigweed related environment variables differences exported",
+            "to matter_sdk_env file'",
         ]
     )
 
