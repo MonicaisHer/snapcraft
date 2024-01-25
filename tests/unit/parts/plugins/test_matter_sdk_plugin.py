@@ -52,7 +52,7 @@ def test_get_pull_commands(part_info):
                 f"wget --no-verbose {ZAP_REPO}/releases/download/"
                 f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
                 f"unzip -o zap-linux-{self.snap_arch}.zip -d zap",
-                "set -a && echo 'export ZAP_INSTALL_PATH=$PWD/zap' >> matter_sdk_env && set +a",
+                'set -a && echo "ZAP_INSTALL_PATH=$PWD/zap" >> matter_sdk_env && set +a',
                 "echo 'ZAP_INSTALL_PATH environment variable exported to matter_sdk_env file'",
             ]
         )
