@@ -90,9 +90,11 @@ class MatterSdkPlugin(plugins.Plugin):
                     f"wget --no-verbose {ZAP_REPO}/releases/download/"
                     f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
                     f"unzip -o zap-linux-{self.snap_arch}.zip -d zap",
-                    "echo 'export ZAP_INSTALL_PATH=$PWD/zap'",
+                    "set -a && echo 'export ZAP_INSTALL_PATH=$PWD/zap' >> matter_sdk_env && set +a",
+                    "echo 'ZAP_INSTALL_PATH environment variable exported to matter_sdk_env file'",
                 ]
             )
+
 
         # Clone Matter SDK repository
         commands.extend(
@@ -167,8 +169,6 @@ class MatterSdkPlugin(plugins.Plugin):
             ]
         )
 
-        # Capture initial environment variables
-        commands.extend(["initial_environment=$(printenv | tr ' ' '\n' | sort)"])
 
         # Bootstrapping script for building Matter SDK with minimal "build" requirements
         # and setting up the environment.
@@ -177,26 +177,16 @@ class MatterSdkPlugin(plugins.Plugin):
         )
         commands.extend(["echo 'Built Matter SDK'"])
 
-        # Capture updated environment variables after the bootstrapping
-        commands.extend(["updated_environment=$(printenv | tr ' ' '\n' | sort)"])
 
-        # Compare and output environment variable differences to matter_sdk_env env file
-        commands.extend(
-            [
-                f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n') \\",
-                f"<(echo $updated_environment | tr ' ' '\n') | awk '{{print $1}}')",
-                "for env in $environment_differences; do",
-                'echo "export $env" >> matter_sdk_env',
-                "done",
-                "echo 'Environment variables differences exported to matter_sdk_env file'",
-            ]
-        )
-
-        commands.extend(
-            [
-                'echo "export PATH=$PATH" >> matter_sdk_env',
-                "echo 'Environment variable PATH exported to matter_sdk_env file'",
-            ]
-        )
+        # Compare and output pigweed related environment variables to matter_sdk_env env file
+        commands.extend([
+            'set -a',
+            'echo "PATH=$PATH" >> matter_sdk_env',
+            'env | grep "^PW_" >> matter_sdk_env',
+            'echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> matter_sdk_env',
+            'echo "CIPD_CACHE_DIR=$CIPD_CACHE_DIR" >> matter_sdk_env',
+            'set +a',
+            "echo 'pigweed related environment variables differences exported to matter_sdk_env file'",
+        ])
 
         return commands
