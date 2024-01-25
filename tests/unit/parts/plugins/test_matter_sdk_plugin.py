@@ -21,7 +21,8 @@ from craft_parts import Part, PartInfo, ProjectInfo
 from snapcraft.parts.plugins import MatterSdkPlugin
 
 # The repository where the matter SDK resides.
-MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip.git"
+MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip"
+ZAP_REPO = "https://github.com/project-chip/zap"
 
 
 @pytest.fixture(autouse=True)
@@ -137,23 +138,30 @@ def test_get_build_commands(part_info):
         ]
     )
 
-    expected_commands.extend(["initial_environment=$(printenv)"])
+    expected_commands.extend(["initial_environment=$(printenv | tr ' ' '\n' | sort)"])
 
     expected_commands.extend(
         ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
     )
     expected_commands.extend(["echo 'Built Matter SDK'"])
 
-    expected_commands.extend(["updated_environment=$(printenv)"])
+    expected_commands.extend(["updated_environment=$(printenv | tr ' ' '\n' | sort)"])
 
     expected_commands.extend(
         [
-            f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n' | sort) \\",
-            f" <(echo $updated_environment | tr ' ' '\n' | sort) | awk '{{print $1}}')",
+            f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n') \\",
+            f"<(echo $updated_environment | tr ' ' '\n') | awk '{{print $1}}')",
             "for env in $environment_differences; do",
-            f'    echo "export $env" >> matter_sdk_env',
+            'echo "export $env" >> matter_sdk_env',
             "done",
             "echo 'Environment variables differences exported to matter_sdk_env file'",
+        ]
+    )
+
+    expected_commands.extend(
+        [
+            'echo "export PATH=$PATH" >> matter_sdk_env',
+            "echo 'Environment variable PATH exported to matter_sdk_env file'",
         ]
     )
 

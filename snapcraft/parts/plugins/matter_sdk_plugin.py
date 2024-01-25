@@ -22,7 +22,7 @@ from craft_parts import infos, plugins
 from overrides import overrides
 
 # The repository where the matter SDK resides.
-MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip.git"
+MATTER_SDK_REPO = "https://github.com/project-chip/connectedhomeip"
 ZAP_REPO = "https://github.com/project-chip/zap"
 
 
@@ -168,7 +168,7 @@ class MatterSdkPlugin(plugins.Plugin):
         )
 
         # Capture initial environment variables
-        commands.extend(["initial_environment=$(printenv)"])
+        commands.extend(["initial_environment=$(printenv | tr ' ' '\n' | sort)"])
 
         # Bootstrapping script for building Matter SDK with minimal "build" requirements
         # and setting up the environment.
@@ -178,17 +178,24 @@ class MatterSdkPlugin(plugins.Plugin):
         commands.extend(["echo 'Built Matter SDK'"])
 
         # Capture updated environment variables after the bootstrapping
-        commands.extend(["updated_environment=$(printenv)"])
+        commands.extend(["updated_environment=$(printenv | tr ' ' '\n' | sort)"])
 
         # Compare and output environment variable differences to matter_sdk_env env file
         commands.extend(
             [
-                f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n' | sort) \\",
-                f" <(echo $updated_environment | tr ' ' '\n' | sort) | awk '{{print $1}}')",
+                f"environment_differences=$(comm -3 <(echo $initial_environment | tr ' ' '\n') \\",
+                f"<(echo $updated_environment | tr ' ' '\n') | awk '{{print $1}}')",
                 "for env in $environment_differences; do",
-                f'    echo "export $env" >> matter_sdk_env',
+                'echo "export $env" >> matter_sdk_env',
                 "done",
                 "echo 'Environment variables differences exported to matter_sdk_env file'",
+            ]
+        )
+
+        commands.extend(
+            [
+                'echo "export PATH=$PATH" >> matter_sdk_env',
+                "echo 'Environment variable PATH exported to matter_sdk_env file'",
             ]
         )
 
