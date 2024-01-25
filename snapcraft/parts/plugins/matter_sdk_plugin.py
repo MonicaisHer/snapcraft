@@ -95,7 +95,6 @@ class MatterSdkPlugin(plugins.Plugin):
                 ]
             )
 
-
         # Clone Matter SDK repository
         commands.extend(
             [
@@ -169,24 +168,25 @@ class MatterSdkPlugin(plugins.Plugin):
             ]
         )
 
-
         # Bootstrapping script for building Matter SDK with minimal "build" requirements
         # and setting up the environment.
         commands.extend(
             ["set +u && source scripts/setup/bootstrap.sh --platform build && set -u"]
         )
+
         commands.extend(["echo 'Built Matter SDK'"])
 
-
         # Compare and output pigweed related environment variables to matter_sdk_env env file
-        commands.extend([
-            'set -a',
-            'echo "PATH=$PATH" >> matter_sdk_env',
-            'env | grep "^PW_" >> matter_sdk_env',
-            'echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> matter_sdk_env',
-            'echo "CIPD_CACHE_DIR=$CIPD_CACHE_DIR" >> matter_sdk_env',
-            'set +a',
-            "echo 'pigweed related environment variables differences exported to matter_sdk_env file'",
-        ])
+        commands.extend(
+            [
+                "set -a",
+                'echo "PATH=$PATH" >> matter_sdk_env',
+                'env | grep "^PW_" >> matter_sdk_env',
+                'echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> matter_sdk_env',
+                'echo "CIPD_CACHE_DIR=$CIPD_CACHE_DIR" >> matter_sdk_env',
+                "set +a",
+                "echo 'pigweed related environment variables differences exported to matter_sdk_env file'",
+            ]
+        )
 
         return commands

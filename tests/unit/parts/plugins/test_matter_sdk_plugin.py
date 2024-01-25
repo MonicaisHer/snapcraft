@@ -50,8 +50,8 @@ def test_get_pull_commands(part_info):
         expected_commands.extend(
             [
                 f"wget --no-verbose {ZAP_REPO}/releases/download/"
-                f"{options.matter_sdk_zap_version}/zap-linux-{self.snap_arch}.zip",
-                f"unzip -o zap-linux-{self.snap_arch}.zip -d zap",
+                f"{zap_version}/zap-linux-{plugin.snap_arch}.zip",
+                f"unzip -o zap-linux-{plugin.snap_arch}.zip -d zap",
                 'set -a && echo "ZAP_INSTALL_PATH=$PWD/zap" >> matter_sdk_env && set +a',
                 "echo 'ZAP_INSTALL_PATH environment variable exported to matter_sdk_env file'",
             ]
@@ -126,9 +126,6 @@ def test_get_build_commands(part_info):
         {"matter-sdk-version": "master", "matter-sdk-zap-version": "v2023.11.13"}
     )
     plugin = MatterSdkPlugin(properties=properties, part_info=part_info)
-
-    sdk_version = properties.matter_sdk_version  # type: ignore
-    zap_version = properties.matter_sdk_zap_version  # type: ignore
 
     expected_commands = []
 
